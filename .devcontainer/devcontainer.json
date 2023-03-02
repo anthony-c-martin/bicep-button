@@ -1,0 +1,25 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "VARIANT": "ubuntu-22.04"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-azureresourcegroups",
+        "ms-azuretools.vscode-bicep",
+        "editorconfig.editorconfig",
+        "github.vscode-pull-request-github",
+        "ms-dotnettools.csharp"
+      ]
+    }
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "github-cli": "latest",
+    "azure-cli": "latest",
+    "dotnet": "latest"
+  }
+}

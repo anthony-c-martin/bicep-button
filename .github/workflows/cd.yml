@@ -1,0 +1,59 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  RG_NAME: 'bicepbutton'
+  BASE_NAME: 'bicepbutton'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1.8.1
+
+      - name: Build
+        run: |
+          dotnet publish \
+            --configuration Release \
+            --output ./deploy/package \
+            ./src/BicepButton
+
+      - name: Generate Zip
+        run: |
+          pushd ./deploy/package
+          zip -r ../package.zip .
+          popd
+
+      - name: AzCLI login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          tenant-id: ${{ secrets.TENANT_ID }}
+          subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+
+      - name: Deploy
+        run: |
+          az deployment group create \
+            --resource-group ${{ env.RG_NAME }} \
+            --name 'main' \
+            --template-file ./deploy/main.bicep \
+            --parameters \
+              baseName=${{ env.BASE_NAME }} \
+            --query "properties.outputs"
+
+          az functionapp deployment source config-zip \
+            --resource-group ${{ env.RG_NAME }} \
+            --name ${{ env.BASE_NAME }} \
+            --src ./deploy/package.zip
