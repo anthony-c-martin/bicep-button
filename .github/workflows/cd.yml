@@ -16,6 +16,10 @@ jobs:
       contents: read
       id-token: write
 
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
