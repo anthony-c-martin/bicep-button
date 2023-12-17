@@ -6,15 +6,15 @@ using Bicep.Core.FileSystem;
 
 public class UriFileResolver : IFileResolver
 {
-    private readonly ConcurrentDictionary<Uri, string> fileCache = new();
+    private readonly ConcurrentDictionary<Uri, byte[]> fileCache = new();
 
-    private string Download(Uri fileUri)
+    private byte[] Download(Uri fileUri)
         => fileCache.GetOrAdd(
             fileUri,
             fileUri => {
                 var client = new HttpClient();
                 
-                return client.GetStringAsync(fileUri).Result;
+                return client.GetByteArrayAsync(fileUri).Result;
             });
 
     public bool DirExists(Uri fileUri)
@@ -47,13 +47,6 @@ public class UriFileResolver : IFileResolver
         throw new NotImplementedException();
     }
 
-    public bool TryRead(Uri fileUri, [NotNullWhen(true)] out string? fileContents, [NotNullWhen(false)] out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder)
-    {
-        fileContents = Download(fileUri);
-        failureBuilder = null;
-        return true;
-    }
-
     public bool TryRead(Uri fileUri, [NotNullWhen(true)] out string? fileContents, [NotNullWhen(false)] out DiagnosticBuilder.ErrorBuilderDelegate? failureBuilder, Encoding fileEncoding, int maxCharacters, [NotNullWhen(true)] out Encoding? detectedEncoding)
     {
         throw new NotImplementedException();
@@ -80,6 +73,35 @@ public class UriFileResolver : IFileResolver
     }
 
     public void Write(Uri fileUri, Stream contents)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ResultWithDiagnostic<string> TryRead(Uri fileUri)
+        => TryRead(fileUri, Encoding.UTF8, -1).IsSuccess(out var result, out var errorBuilder)
+            ? new(result.Contents) : new(errorBuilder!);
+
+    public ResultWithDiagnostic<FileWithEncoding> TryRead(Uri fileUri, Encoding fileEncoding, int maxCharacters)
+    {
+        try
+        {
+            var bytes = Download(fileUri);
+
+            var contents = fileEncoding.GetString(bytes) ?? throw new InvalidOperationException("Could not decode file contents");
+            return new(new FileWithEncoding(contents, fileEncoding));
+        }
+        catch (Exception exception)
+        {
+            return new(x => x.ErrorOccurredReadingFile(exception.Message));
+        }
+    }
+
+    public ResultWithDiagnostic<string> TryReadAtMostNCharacters(Uri fileUri, Encoding fileEncoding, int n)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ResultWithDiagnostic<string> TryReadAsBase64(Uri fileUri, int maxCharacters = -1)
     {
         throw new NotImplementedException();
     }
