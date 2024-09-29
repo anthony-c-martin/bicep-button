@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.23.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.2.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.4" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.18.0" />
     <PackageReference Include="Azure.Bicep.Core" Version="0.24.24" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
   </ItemGroup>
